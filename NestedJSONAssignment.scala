@@ -8,20 +8,12 @@ object NestedJSONAssignment {
 
   def main(args: Array[String]): Unit = {
 
-    // ==========================================
-    // STEP 1: CREATE SPARK SESSION
-    // ==========================================
-
     val spark = SparkSession.builder()
       .appName("Nested JSON Assignment")
       .master("local[*]")
       .getOrCreate()
 
     import spark.implicits._
-
-    // ==========================================
-    // STEP 2: READ JSON FILE AS RAW TEXT
-    // ==========================================
 
     val rawDF = spark.read
       .text("src/main/resources/orders.json")
@@ -31,10 +23,6 @@ object NestedJSONAssignment {
 
     println("========== RAW DATA SCHEMA ==========")
     rawDF.printSchema()
-
-    // ==========================================
-    // STEP 3: DEFINE EXPLICIT NESTED SCHEMA
-    // ==========================================
 
     val customerSchema = StructType(Seq(
       StructField("id", StringType, true),
@@ -67,10 +55,6 @@ object NestedJSONAssignment {
     println("========== EXPLICIT ORDER SCHEMA ==========")
     println(orderSchema.treeString)
 
-    // ==========================================
-    // STEP 4: PARSE JSON USING from_json()
-    // ==========================================
-
     val parsedDF = rawDF.select(
       from_json(col("value"), orderSchema).as("order")
     )
@@ -78,10 +62,6 @@ object NestedJSONAssignment {
     println("========== PARSED JSON ==========")
     parsedDF.show(false)
     parsedDF.printSchema()
-
-    // ==========================================
-    // STEP 5: EXTRACT NESTED FIELDS
-    // ==========================================
 
     val ordersDF = parsedDF.select(
       col("order.orderId").as("orderId"),
@@ -96,10 +76,6 @@ object NestedJSONAssignment {
 
     println("========== EXTRACTED ORDER DATA ==========")
     ordersDF.show(false)
-
-    // ==========================================
-    // STEP 6: FLATTEN ITEMS USING explode()
-    // ==========================================
 
     val productsDF = ordersDF
       .withColumn("item", explode(col("items")))
@@ -125,10 +101,6 @@ object NestedJSONAssignment {
 
     productsDF.printSchema()
 
-    // ==========================================
-    // STEP 7: PRODUCT-LEVEL AGGREGATION
-    // ==========================================
-
     val productSalesDF = productsDF
       .groupBy("product")
       .agg(
@@ -140,9 +112,6 @@ object NestedJSONAssignment {
     println("========== PRODUCT SALES ==========")
     productSalesDF.show(false)
 
-    // ==========================================
-    // STEP 8: ORDER-LEVEL AGGREGATION
-    // ==========================================
 
     val orderTotalsDF = productsDF
       .groupBy(
@@ -161,17 +130,9 @@ object NestedJSONAssignment {
     println("========== ORDER TOTALS ==========")
     orderTotalsDF.orderBy("orderId").show(false)
 
-    // ==========================================
-    // STEP 9: CREATE TEMPORARY VIEWS
-    // ==========================================
-
     ordersDF.createOrReplaceTempView("orders_view")
     productsDF.createOrReplaceTempView("products_view")
     orderTotalsDF.createOrReplaceTempView("order_totals_view")
-
-    // ==========================================
-    // STEP 10: SPARK SQL QUERIES
-    // ==========================================
 
     println("========== HYDERABAD ORDERS ==========")
 
@@ -207,11 +168,6 @@ object NestedJSONAssignment {
       ORDER BY totalSpending DESC
     """).show(false)
 
-    // ==========================================
-    // STEP 11: ROW_NUMBER()
-    // LATEST ORDER PER CUSTOMER
-    // ==========================================
-
     val latestOrderWindow = Window
       .partitionBy("customerId")
       .orderBy(desc("orderDate"))
@@ -226,11 +182,6 @@ object NestedJSONAssignment {
     println("========== LATEST ORDER PER CUSTOMER ==========")
     latestOrdersDF.show(false)
 
-    // ==========================================
-    // STEP 12: RANK()
-    // RANK ORDERS BY VALUE PER CUSTOMER
-    // ==========================================
-
     val orderValueWindow = Window
       .partitionBy("customerId")
       .orderBy(desc("orderTotal"))
@@ -244,10 +195,6 @@ object NestedJSONAssignment {
     println("========== RANKED ORDERS ==========")
     rankedOrdersDF.orderBy("customerId", "orderRank").show(false)
 
-    // ==========================================
-    // STEP 13: DENSE_RANK()
-    // RANK PRODUCTS BY TOTAL SALES
-    // ==========================================
 
     val productRankWindow = Window
       .orderBy(desc("totalSales"))
@@ -260,11 +207,6 @@ object NestedJSONAssignment {
 
     println("========== PRODUCT DENSE RANK ==========")
     rankedProductsDF.show(false)
-
-    // ==========================================
-    // STEP 14: SUM() OVER
-    // RUNNING CUSTOMER SPENDING
-    // ==========================================
 
     val runningSpendWindow = Window
       .partitionBy("customerId")
@@ -285,11 +227,6 @@ object NestedJSONAssignment {
       .orderBy("customerId", "orderDate")
       .show(false)
 
-    // ==========================================
-    // STEP 15: LAG()
-    // PREVIOUS ORDER VALUE
-    // ==========================================
-
     val previousOrderDF = orderTotalsDF
       .withColumn(
         "previousOrderAmount",
@@ -305,10 +242,6 @@ object NestedJSONAssignment {
       .orderBy("customerId", "orderDate")
       .show(false)
 
-    // ==========================================
-    // STEP 16: SECOND ORDER BY VALUE
-    // ==========================================
-
     val secondOrderDF = orderTotalsDF
       .withColumn(
         "orderNumber",
@@ -319,19 +252,11 @@ object NestedJSONAssignment {
     println("========== SECOND ORDER BY VALUE PER CUSTOMER ==========")
     secondOrderDF.show(false)
 
-    // ==========================================
-    // STEP 17: VALIDATE TOTAL SALES
-    // ==========================================
-
     println("========== TOTAL SALES VALIDATION ==========")
 
     productsDF
       .agg(sum("productAmount").as("grandTotalSales"))
       .show(false)
-
-    // ==========================================
-    // STOP SPARK SESSION
-    // ==========================================
 
     spark.stop()
   }
