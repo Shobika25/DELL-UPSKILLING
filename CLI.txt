@@ -4,10 +4,8 @@ scala> :paste
 
 import org.apache.spark.sql.functions._
 
-// Use the SparkSession already available in spark-shell
 import spark.implicits._
 
-// ---------- Case classes ----------
 
 case class Department(
   dept_id: Int,
@@ -25,7 +23,6 @@ case class Employee(
   skills_json: String
 )
 
-// ---------- Sample data ----------
 
 val deptSeq = Seq(
   Department(10, "Engineering", "New York"),
@@ -58,19 +55,18 @@ val empSeq = Seq(
     """[{"skill":"Scala","level":"Intermediate"},{"skill":"SQL","level":"Advanced"}]""")
 )
 
-// ---------- Create DataFrames ----------
+
 
 val departments = deptSeq.toDF()
 val employees = empSeq.toDF()
 
-// ---------- Create Temporary Views ----------
 
 departments.createOrReplaceTempView("departments")
 employees.createOrReplaceTempView("employees")
 
 println("Setup complete - temp views ready")
 
-// ---------- Verify Data ----------
+
 
 spark.sql("SELECT * FROM departments").show()
 
@@ -78,7 +74,7 @@ spark.sql(
   "SELECT emp_id, name, dept_id, salary FROM employees"
 ).show()
 
-// Exiting paste mode, now interpreting.
+
 
 Setup complete - temp views ready
 +-------+-----------+--------+
