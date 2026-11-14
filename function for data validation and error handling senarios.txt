@@ -1,0 +1,181 @@
+
+scala> case class Candidate(
+     | name:String,
+     | score: Option[Int]
+     | )
+defined class Candidate
+
+scala> def getPassingCandidates(
+     | candidates:List[Candidate]
+     | ):List[(String,Int)]={
+     | candidates.flatMap{
+     | case Candidate(name,Some(score)) if score>=60 => Some(name -> score)
+     | case Candidate(_,Some(score)) =>
+     | None
+     | case Candidate(-,None) =>
+     | None
+     | }
+     | }
+<console>:31: error: not found: value -
+       case Candidate(-,None) =>
+                      ^
+
+scala> def getPassingCandidates(
+     | def getPassingCandidates(
+<console>:2: error: identifier expected but 'def' found.
+       def getPassingCandidates(
+       ^
+
+scala> def getPassingCandidates(
+     | def getPassingCandidates(
+<console>:2: error: identifier expected but 'def' found.
+       def getPassingCandidates(
+       ^
+
+scala> :paste
+// Entering paste mode (ctrl-D to finish)
+
+def getPassingCandidates(
+     | candidates:List[Candidate]
+     | ):List[(String,Int)]={
+     | candidates.flatMap{
+     | case Candidate(name,Some(score)) if score>=60 => Some(name -> score)
+     | case Candidate(_,Some(score)) =>
+     | None
+     | case Candidate(_,None) =>
+     | None
+     | }
+     | }
+
+// Exiting paste mode, now interpreting.
+
+<pastie>:2: error: ':' expected but identifier found.
+     | candidates:List[Candidate]
+       ^
+
+scala> :paste
+// Entering paste mode (ctrl-D to finish)
+
+def getPassingCandidates(
+    candidates: List[Candidate]
+): List[(String, Int)] = {
+
+  candidates.flatMap {
+
+    case Candidate(name, Some(score)) if score >= 60 =>
+      Some(name -> score)
+
+    case Candidate(_, Some(score)) =>
+      None
+
+    case Candidate(_, None) =>
+      None
+  }
+}
+
+// Exiting paste mode, now interpreting.
+
+getPassingCandidates: (candidates: List[Candidate])List[(String, Int)]
+
+scala> :paste
+// Entering paste mode (ctrl-D to finish)
+
+def validateCandidate(
+    candidate: Candidate
+): Either[String, Int] = {
+
+Display all 920 possibilities? (y or n)
+candidate match {
+    case Candidate(name, Some(score)) if score >= 60 =>
+      Right(score)
+
+    case Candidate(name, Some(score)) =>
+      Left(s"$name failed with score $score")
+
+    case Candidate(name, None) =>
+      Left(s"$name has no assessment score")
+  }
+}
+
+// Exiting paste mode, now interpreting.
+
+validateCandidate: (candidate: Candidate)Either[String,Int]
+
+scala> :paste
+// Entering paste mode (ctrl-D to finish)
+
+val candidates = List(
+  Candidate("John", Some(85)),
+  Candidate("David", Some(45)),
+  Candidate("Smith", None)
+)
+
+val results = candidates.map(validateCandidate)
+
+results.foreach {
+  case Right(score) =>
+    println(s"Valid score: $score")
+
+  case Left(error) =>
+    println(s"Error: $error")
+}
+
+
+// Exiting paste mode, now interpreting.
+
+Valid score: 85
+Error: David failed with score 45
+Error: Smith has no assessment score
+candidates: List[Candidate] = List(Candidate(John,Some(85)), Candidate(David,Some(45)), Candidate(Smith,None))
+results: List[Either[String,Int]] = List(Right(85), Left(David failed with score 45), Left(Smith has no assessment score))
+
+scala> :paste
+// Entering paste mode (ctrl-D to finish)
+
+
+case class Candidate(
+    name: String,
+    score: Option[Int]
+)
+
+object CandidateValidation {
+
+  def validateCandidate(
+      candidate: Candidate
+  ): Either[String, Int] = {
+
+    candidate match {
+
+      case Candidate(name, Some(score))
+          if score >= 60 =>
+        Right(score)
+
+      case Candidate(name, Some(score)) =>
+        Left(s"$name failed with score $score")
+
+      case Candidate(name, None) =>
+        Left(s"$name has no assessment score")
+    }
+  }
+
+  def main(args: Array[String]): Unit = {
+
+    val c1 = Candidate("Raj", Some(85))
+    val c2 = Candidate("John", Some(45))
+    val c3 = Candidate("David", None)
+
+    println(validateCandidate(c1))
+    println(validateCandidate(c2))
+    println(validateCandidate(c3))
+  }
+}
+
+// Exiting paste mode, now interpreting.
+
+defined class Candidate
+defined object CandidateValidation
+
+scala> CandidateValidation.main(Array())
+Right(85)
+Left(John failed with score 45)
+Left(David has no assessment score)

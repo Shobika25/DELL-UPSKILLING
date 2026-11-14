@@ -1,0 +1,113 @@
+
+
+scala> val a:Int=10
+a: Int = 10
+
+scala> val b:Int=5
+b: Int = 5
+
+scala> val sum:Int=a+b
+sum: Int = 15
+
+scala> val diff:Int=a-b
+diff: Int = 5
+
+scala> val mul:Int=a*b
+mul: Int = 50
+
+scala> val divi=a/b
+divi: Int = 2
+
+scala> val str:String="Shobika"
+str: String = Shobika
+
+scala> print(s"Hii {str} Welcome")
+Hii {str} Welcome
+scala> print(s"Hii ${str} Welcome")
+Hii Shobika Welcome
+scala> def Sum_num(a:Int,b:Int):Int=>{
+     | return a+b
+<console>:2: error: illegal start of declaration (possible cause: missing `=' in front of current method body)
+       return a+b
+       ^
+
+scala> def Sum_num(a:Int,b:Int):Int=>{
+     | return a+b
+<console>:2: error: illegal start of declaration (possible cause: missing `=' in front of current method body)
+       return a+b
+       ^
+
+scala> def Sum_num(a:Int,b:Int):Int=>{
+     | a+b
+<console>:2: error: illegal start of declaration (possible cause: missing `=' in front of current method body)
+       a+b
+       ^
+
+scala> def Sum_num(a:Int,b:Int):Int={
+     | a+b
+     | }
+Sum_num: (a: Int, b: Int)Int
+
+scala> Sum_num(10,20)
+res2: Int = 30
+
+scala> val name:String="Devi"
+name: String = Devi
+
+scala> val course:String="Data Engineering"
+course: String = Data Engineering
+
+scala> var age:Int=20
+age: Int = 20
+
+scala> var fee:Int=90000
+fee: Int = 90000
+
+scala> print(s"Name: $name Course: $course Age: $age fee: $fee")
+Name: Devi Course: Data Engineering Age: 20 fee: 90000
+scala> fee=fee+10000
+fee: Int = 100000
+
+scala> age=age+1
+age: Int = 21
+
+scala> print(s"Name: $name Course: $course Age: $age fee: $fee")
+Name: Devi Course: Data Engineering Age: 21 fee: 100000
+scala>
+
+scala> var Product_name:String="Laptop"
+Product_name: String = Laptop
+
+scala> var quantity:Int=5
+quantity: Int = 5
+
+scala> var price:Double=70000
+price: Double = 70000.0
+
+scala> var availability:Boolean=True
+<console>:22: error: not found: value True
+       var availability:Boolean=True
+                                ^
+
+scala> var availability:Boolean=true
+availability: Boolean = true
+
+scala> var total_price:Double=quantity*price
+total_price: Double = 350000.0
+
+scala> print(s"$Product_name $quantity $price $total_price")
+Laptop 5 70000.0 350000.0
+scala> var doval:double=quantity.toDouble
+<console>:23: error: not found: type double
+       var doval:double=quantity.toDouble
+                 ^
+
+scala> var doval:Double=quantity.toDouble
+doval: Double = 5.0
+
+scala> var prce:Int=price.toInt
+prce: Int = 70000
+
+scala> print(s"$Product_name $doval $prce $total_price")
+Laptop 5.0 70000 350000.0
+scala>

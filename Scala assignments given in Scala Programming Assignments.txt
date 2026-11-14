@@ -1,0 +1,576 @@
+
+scala> :paste
+// Entering paste mode (ctrl-D to finish)
+
+
+case class Candidate(
+    name: String,
+    score: Option[Int]
+)
+
+object CandidateAssessment {
+
+
+  def passedCandidates(
+      candidates: List[Candidate]
+  ): List[String] = {
+
+    candidates.filter {
+      case Candidate(name, Some(score)) if score >= 60 => true
+      case _ => false
+    }.map(_.name)
+  }
+
+
+  def failedCandidates(
+      candidates: List[Candidate]
+  ): List[String] = {
+
+    candidates.filter {
+      case Candidate(name, Some(score)) if score < 60 => true
+      case _ => false
+    }.map(_.name)
+  }
+
+
+  def pendingCandidates(
+      candidates: List[Candidate]
+  ): List[String] = {
+
+    candidates.filter {
+      case Candidate(name, None) => true
+      case _ => false
+    }.map(_.name)
+  }
+
+
+  def averageScore(
+      candidates: List[Candidate]
+  ): Double = {
+
+    val scores = candidates.flatMap {
+      case Candidate(name, Some(score)) => Some(score)
+      case Candidate(name, None) => None
+    }
+
+    if (scores.isEmpty) 0.0
+    else scores.map(_.toDouble).sum / scores.size
+  }
+
+  def main(args: Array[String]): Unit = {
+
+    val candidates = List(
+      Candidate("John", Some(85)),
+      Candidate("David", Some(45)),
+      Candidate("Smith", None),
+      Candidate("Peter", Some(75)),
+      Candidate("Alex", None)
+    )
+
+    println("Passed candidates: " +
+      passedCandidates(candidates).mkString(", "))
+
+    println("Failed candidates: " +
+      failedCandidates(candidates).mkString(", "))
+
+    println("Pending candidates: " +
+      pendingCandidates(candidates).mkString(", "))
+
+    println(f"Average score: ${averageScore(candidates)}%.2f")
+  }
+}
+
+// Exiting paste mode, now interpreting.
+
+defined class Candidate
+defined object CandidateAssessment
+
+scala> CandidateAssessment.main(Array())
+Passed candidates: John, Peter
+Failed candidates: David
+Pending candidates: Smith, Alex
+Average score: 68.33
+
+scala> :paste
+// Entering paste mode (ctrl-D to finish)
+
+
+case class Employee(
+    id: Int,
+    name: String,
+    department: String,
+    salary: Option[Double]
+)
+
+object EmployeeSalaryValidation {
+
+  def validateSalary(
+      employee: Employee
+  ): Either[String, Double] = {
+
+    employee.salary match {
+
+      case Some(salary) if salary > 0 =>
+        Right(salary)
+
+      case Some(salary) =>
+        Left(s"${employee.name} has invalid salary: $salary")
+
+      case None =>
+        Left(s"${employee.name} has missing salary")
+    }
+  }
+
+  def main(args: Array[String]): Unit = {
+
+    val employees = List(
+      Employee(101, "John", "IT", Some(50000)),
+      Employee(102, "David", "HR", Some(30000)),
+      Employee(103, "Smith", "IT", None),
+      Employee(104, "Peter", "Finance", Some(-1000)),
+      Employee(105, "Alex", "IT", Some(70000))
+    )
+
+
+    val validationResults = employees.map { employee =>
+      (employee, validateSalary(employee))
+    }
+
+
+    val validEmployees = validationResults.filter {
+      case (employee, Right(salary)) => true
+      case (employee, Left(error)) => false
+    }
+
+
+    val invalidEmployees = validationResults.filter {
+      case (employee, Left(error)) => true
+      case (employee, Right(salary)) => false
+    }
+
+
+    val validITEmployees = validEmployees.filter {
+      case (employee, result) =>
+        employee.department == "IT"
+    }
+
+
+    val itSalaries = validITEmployees.map {
+      case (employee, Right(salary)) => salary
+      case _ => 0.0
+    }
+
+    val averageITSalary =
+      if (itSalaries.isEmpty) 0.0
+      else itSalaries.sum / itSalaries.size
+
+
+    println("Valid employees: " +
+      validEmployees.map(_._1.name).mkString(", "))
+
+    println("Invalid employees: " +
+      invalidEmployees.map(_._1.name).mkString(", "))
+
+    println("Valid IT employees: " +
+      validITEmployees.map(_._1.name).mkString(", "))
+
+    println(f"Average IT salary: $averageITSalary%.0f")
+  }
+}
+
+// Exiting paste mode, now interpreting.
+
+defined class Employee
+defined object EmployeeSalaryValidation
+
+scala>  EmployeeSalaryValidation.main(Array())
+Valid employees: John, David, Alex
+Invalid employees: Smith, Peter
+Valid IT employees: John, Alex
+Average IT salary: 60000
+
+scala>
+
+
+
+scala> :paste
+// Entering paste mode (ctrl-D to finish)
+
+
+case class Order(
+  orderId: Int,
+  customerName: String,
+  amount: Option[Double],
+  status: String
+)
+
+
+val orders = List(
+  Order(1, "John", Some(2500), "COMPLETED"),
+  Order(2, "David", Some(1500), "PENDING"),
+  Order(3, "Smith", None, "COMPLETED"),
+  Order(4, "Peter", Some(-500), "FAILED"),
+  Order(5, "Alex", Some(4000), "COMPLETED")
+)
+
+def validateAmount(amount: Option[Double]): Either[String, Double] = {
+  amount match {
+    case None => Left("Amount is missing")
+    case Some(value) if value <= 0 => Left("Amount must be positive")
+    case Some(value) => Right(value)
+  }
+}
+
+
+val completedOrders = orders.filter {
+  case Order(_, _, amount, "COMPLETED") =>
+    validateAmount(amount).isRight
+  case _ => false
+}
+
+
+val pendingOrders = orders.filter {
+  case Order(_, _, _, "PENDING") => true
+  case _ => false
+}
+
+
+val invalidOrders = orders.filter {
+  order =>
+    validateAmount(order.amount).isLeft
+}
+
+val totalAmount = completedOrders.flatMap(_.amount).sum
+
+
+println("Completed valid orders: " +
+  completedOrders.map(_.orderId).mkString(", "))
+
+println("Pending orders: " +
+  pendingOrders.map(_.orderId).mkString(", "))
+
+println("Invalid orders: " +
+  invalidOrders.map(_.orderId).mkString(", "))
+
+println("Total completed order amount: " + totalAmount)
+
+
+println("Valid orders:")
+completedOrders.foreach {
+  case Order(id, _, Some(amount), _) =>
+    println(s"Order ID: $id, Amount: $amount")
+  case _ =>
+}
+
+// Exiting paste mode, now interpreting.
+
+Completed valid orders: 1, 5
+Pending orders: 2
+Invalid orders: 3, 4
+Total completed order amount: 6500.0
+Valid orders:
+Order ID: 1, Amount: 2500.0
+Order ID: 5, Amount: 4000.0
+defined class Order
+orders: List[Order] = List(Order(1,John,Some(2500.0),COMPLETED), Order(2,David,Some(1500.0),PENDING), Order(3,Smith,None,COMPLETED), Order(4,Peter,Some(-500.0),FAILED), Order(5,Alex,Some(4000.0),COMPLETED))
+validateAmount: (amount: Option[Double])Either[String,Double]
+completedOrders: List[Order] = List(Order(1,John,Some(2500.0),COMPLETED), Order(5,Alex,Some(4000.0),COMPLETED))
+pendingOrders: List[Order] = List(Order(2,David,Some(1500.0),PENDING))
+invalidOrders: List[Order] = List(Order(3,Smith,None,COMPLETED), Order(4,Peter,Some(-500.0),FAILED))
+totalAmount: Double = 6500.0
+
+scala> :paste
+// Entering paste mode (ctrl-D to finish)
+
+
+case class Subject(
+  name: String,
+  marks: Option[Int]
+)
+
+case class Student(
+  id: Int,
+  name: String,
+  subjects: List[Subject]
+)
+
+
+val students = List(
+  Student(1, "John", List(
+    Subject("Maths", Some(85)),
+    Subject("Science", Some(90)),
+    Subject("English", Some(80))
+  )),
+
+  Student(2, "David", List(
+    Subject("Maths", Some(60)),
+    Subject("Science", Some(55)),
+    Subject("English", Some(65))
+  )),
+
+  Student(3, "Smith", List(
+    Subject("Maths", Some(90)),
+    Subject("Science", None),
+    Subject("English", Some(85))
+  )),
+
+  Student(4, "Peter", List(
+    Subject("Maths", Some(40)),
+    Subject("Science", Some(45)),
+    Subject("English", Some(50))
+  )),
+
+  Student(5, "Alex", List(
+    Subject("Maths", Some(95)),
+    Subject("Science", Some(92)),
+    Subject("English", Some(98))
+  ))
+)
+
+
+def validateMarks(marks: Option[Int]): Either[String, Int] = {
+  marks match {
+    case None => Left("Marks are missing")
+    case Some(value) if value < 0 || value > 100 =>
+      Left("Marks must be between 0 and 100")
+    case Some(value) => Right(value)
+  }
+}
+
+
+def calculateTotal(student: Student): Int = {
+  student.subjects.flatMap(_.marks).sum
+}
+
+
+val incompleteStudents = students.filter {
+  case Student(_, _, subjects) =>
+    subjects.exists {
+      case Subject(_, None) => true
+      case Subject(_, Some(_)) => false
+    }
+}
+
+
+val completeStudents = students.filter {
+  student =>
+    student.subjects.forall {
+      subject => validateMarks(subject.marks).isRight
+    }
+}
+
+
+def percentage(student: Student): Double = {
+  calculateTotal(student).toDouble /
+    (student.subjects.size * 100) * 100
+}
+
+
+val passedStudents = completeStudents.filter {
+  student => percentage(student) >= 50
+}
+
+
+val distinctionStudents = completeStudents.filter {
+  student => percentage(student) >= 75
+}
+
+
+println("Student-wise Total Marks:")
+
+students.foreach {
+  case Student(id, name, subjects) =>
+    println(s"$id - $name : ${calculateTotal(Student(id, name, subjects))}")
+}
+
+
+println("\nStudents who passed:")
+passedStudents.foreach(s => println(s.name))
+
+println("\nStudents with incomplete assessments:")
+incompleteStudents.foreach(s => println(s.name))
+
+
+println("\nStudents with distinction:")
+distinctionStudents.foreach(s => println(s.name))
+
+
+println("\nSubject validation results:")
+
+students.flatMap {
+  case Student(id, name, subjects) =>
+    subjects.map {
+      case Subject(subjectName, marks) =>
+        (name, subjectName, validateMarks(marks))
+    }
+}.foreach {
+  case (studentName, subjectName, result) =>
+    println(s"$studentName - $subjectName : $result")
+}
+
+
+// Exiting paste mode, now interpreting.
+
+Student-wise Total Marks:
+1 - John : 255
+2 - David : 180
+3 - Smith : 175
+4 - Peter : 135
+5 - Alex : 285
+
+Students who passed:
+John
+David
+Alex
+
+Students with incomplete assessments:
+Smith
+
+Students with distinction:
+John
+Alex
+
+Subject validation results:
+John - Maths : Right(85)
+John - Science : Right(90)
+John - English : Right(80)
+David - Maths : Right(60)
+David - Science : Right(55)
+David - English : Right(65)
+Smith - Maths : Right(90)
+Smith - Science : Left(Marks are missing)
+Smith - English : Right(85)
+Peter - Maths : Right(40)
+Peter - Science : Right(45)
+Peter - English : Right(50)
+Alex - Maths : Right(95)
+Alex - Science : Right(92)
+Alex - English : Right(98)
+defined class Subject
+defined class Student
+students: List[Student] = List(Student(1,John,List(Subject(Maths,Some(85)), Subject(Science,Some(90)), Subject(English,Some(80)))), Student(2,David,List(Subject(Maths,Some(60)), Subject(Science,Some(55)), Subject(English,Some(65)))), Student(3,Smith,List(Subject(Maths,Some(90)), Subject(Science,None), Subject(English,Some(85)))), Student(4,Peter,List(Subject(Maths,Some(40)), Subject(Science,Some(45)), Subject(English,Some(50)))), Student(5,Alex,List(Subject(Maths,Some(95)), Subject(Science,Some(92)), Subject(English,Some(98)))))
+validateMarks: (marks: Option[Int])Either[String,Int]
+calculateTotal: (student: Student)Int
+incompleteStudents: List[Student] = List(Student(3,Smith,List(Subject(Maths,Some(90)), Subject(Science,None), Subject(Eng...
+
+
+
+scala> :paste
+// Entering paste mode (ctrl-D to finish)
+
+
+case class Customer(
+  id: Option[Int],
+  name: Option[String],
+  age: Option[Int],
+  email: Option[String]
+)
+
+
+val customers = List(
+  Customer(Some(1), Some("John"), Some(25), Some("john@gmail.com")),
+
+  Customer(Some(2), Some("David"), Some(30), Some("david@gmail.com")),
+
+  Customer(None, Some("Smith"), Some(28), Some("smith@gmail.com")),
+
+  Customer(Some(4), Some("Peter"), Some(15), Some("peter@gmail.com")),
+
+  Customer(Some(5), Some("Alex"), Some(35), Some("alexgmail.com")),
+
+  Customer(Some(-6), Some("Sam"), Some(40), Some("sam@gmail.com")),
+
+  Customer(Some(7), Some(""), Some(22), Some("test@gmail.com")),
+
+  Customer(Some(8), Some("Mike"), None, Some("mike@gmail.com"))
+)
+
+
+def validateCustomer(
+  customer: Customer
+): Either[String, Customer] = {
+
+  customer match {
+
+    case Customer(None, _, _, _) =>
+      Left("Customer ID is missing")
+
+    case Customer(Some(id), _, _, _) if id <= 0 =>
+      Left("Customer ID must be positive")
+
+    case Customer(_, None, _, _) =>
+      Left("Customer name is missing")
+
+    case Customer(_, Some(name), _, _) if name.trim.isEmpty =>
+      Left("Customer name cannot be empty")
+
+    case Customer(_, _, None, _) =>
+      Left("Customer age is missing")
+
+    case Customer(_, _, Some(age), _) if age < 18 || age > 100 =>
+      Left("Age must be between 18 and 100")
+
+    case Customer(_, _, _, None) =>
+      Left("Email is missing")
+
+    case Customer(_, _, _, Some(email)) if !email.contains("@") =>
+      Left("Invalid email address")
+
+    case validCustomer =>
+      Right(validCustomer)
+  }
+}
+val validationResults = customers.map(validateCustomer)
+
+
+val validCustomers = validationResults.flatMap {
+  case Right(customer) => Some(customer)
+  case Left(error) => None
+}
+
+
+val rejectedCustomers = customers.zip(validationResults).collect {
+  case (customer, Left(error)) => (customer, error)
+}
+
+
+println("Total records received: " + customers.size)
+
+println("Valid customer count: " + validCustomers.size)
+
+println("Rejected customer count: " + rejectedCustomers.size)
+
+println("\nValid Customers:")
+
+validCustomers.foreach(println)
+
+println("\nRejected Customers:")
+
+rejectedCustomers.foreach {
+  case (customer, error) =>
+    println(s"$customer => Error: $error")
+}
+
+// Exiting paste mode, now interpreting.
+
+Total records received: 8
+Valid customer count: 2
+Rejected customer count: 6
+
+Valid Customers:
+Customer(Some(1),Some(John),Some(25),Some(john@gmail.com))
+Customer(Some(2),Some(David),Some(30),Some(david@gmail.com))
+
+Rejected Customers:
+Customer(None,Some(Smith),Some(28),Some(smith@gmail.com)) => Error: Customer ID is missing
+Customer(Some(4),Some(Peter),Some(15),Some(peter@gmail.com)) => Error: Age must be between 18 and 100
+Customer(Some(5),Some(Alex),Some(35),Some(alexgmail.com)) => Error: Invalid email address
+Customer(Some(-6),Some(Sam),Some(40),Some(sam@gmail.com)) => Error: Customer ID must be positive
+Customer(Some(7),Some(),Some(22),Some(test@gmail.com)) => Error: Customer name cannot be empty
+Customer(Some(8),Some(Mike),None,Some(mike@gmail.com)) => Error: Customer age is missing
+defined class Customer
+customers: List[Customer] = List(Customer(Some(1),Some(John),Some(25),Some(john@gmail.com)), Customer(Some(2),Some(David),Some(30),Some(david@gmail.com)), Customer(None,Some(Smith),Some(28),Some(smith@gmail.com)), Customer(Some(4),Some(Peter),Some(15),Some(peter@gmail.com)), Customer(Some(5),Some(Alex),Some(35),Some(alexgmail.com)), Customer(Some(-6),Some(Sam),Some(40),Some(sam@gmail.com)), Customer(Some(7),Some(),Some(22),Some(test@gmail.com)), Customer(Some(8),Some(Mike),None,Some(mike@gmail.com)))
+validateCustomer: (customer: Customer)Either[String,Customer]
+validationResults: List[Either[String,Customer]] = List(Right(Customer(Some(1),Some(John),Some(25),Some(john@gmail.com))), Right(Customer(Some(2),Some(David),Some(30),Some(david@gmail.com))), Left(Custom...
+
+scala>
